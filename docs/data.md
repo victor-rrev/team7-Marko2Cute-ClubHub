@@ -4,6 +4,6 @@ Here you will find access to all our collected data. This includes: surveys, dia
 
 [Diary studies]()
 
-[Figma-based observations]()
+[Figma-based observations](https://docs.google.com/document/d/1ECt7vJbt4aIXV76ttzZCYbUuLErhQ3xwOANWnRmo86w/edit?tab=t.0)
 
-[Figma-based surveys](https://docs.google.com/document/d/1ECt7vJbt4aIXV76ttzZCYbUuLErhQ3xwOANWnRmo86w/edit?tab=t.0)
+[Figma-based surveys]()
