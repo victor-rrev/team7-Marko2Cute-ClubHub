@@ -1,4 +1,4 @@
-## This is ClubHub. 
+# This is ClubHub. 
 
 Our mission is to improve the accesibility of information for clubs at CCA. 
 
@@ -13,4 +13,4 @@ Sincerely,
 
 Your ClubHub Project Lead,
 
-# Victor Reverdatto
+#### Victor Reverdatto
