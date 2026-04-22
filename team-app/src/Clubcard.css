@@ -1,5 +1,4 @@
 .ClubList{
-    border: 1px ;
     border-radius: 10px;
     margin-top: 20px;
     margin-bottom: 20px;
@@ -12,6 +11,8 @@
 .clublisttimeandplace{
     display:flex;
 }
-#clublistdesc{
-    background-color:rgb(255, 128, 128)
+div{
+    background-color: #FFEFEF;
+    color:black;
+    border: 1px black;
 }
