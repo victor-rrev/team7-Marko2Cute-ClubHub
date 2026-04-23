@@ -1,0 +1,26 @@
+.sidebar {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:50px;
+    background:white;
+    border-radius:20px;
+    padding: 50px 15px;
+    width: 120px;
+    height: fit-content;
+    border-radius: 50px;
+    position: fixed;
+    left: 70px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.side-bar-item {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:5px;
+    color: #E8420A;
+    font-size:20px;
+    cursor: pointer;
+}
