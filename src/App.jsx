@@ -39,12 +39,12 @@ function App() {
           </div>
           </header>
           <Discover />
-      <ClubList name="A Club" description="We draw As" categories="fun" time="never" location="CCA"/>
           </>
         )}
         {page == "posts" && <Posts/>}
         {page == "events" && <Events/>}
         {page == "account" && <Account/>}
+      <ClubList name="A Club" description="We draw As" categories="fun" time="never" location="CCA"/>
       </main>
     </div>
   )
