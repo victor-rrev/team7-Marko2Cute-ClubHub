@@ -1,0 +1,24 @@
+.Card h1{
+    font-family: 'Courier New', Courier, monospace;
+    color: rgb(0,0,0);
+    margin-right:100px;
+    display:flex;
+    margin-bottom:0px;
+    padding-bottom:5px;
+}
+.Card{
+    border: 1px ;
+    border-radius: 10px;
+    margin-top: 100px;
+    margin-bottom: 20px;
+    margin-left: 50px;
+    background-color: darkorange;
+    padding-left:20px;
+}
+.Card h5,h3,p{
+    display:flex;
+    margin-top: 0px;
+    padding-top:0px;
+    margin-bottom: 0px;
+    padding-bottom:5px;
+}
