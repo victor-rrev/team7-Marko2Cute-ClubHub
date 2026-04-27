@@ -1,5 +1,4 @@
-function Discover(){
-
+function Discover() {
 }
 
-export default Discover;
+export default Discover
