@@ -1,5 +1,6 @@
 import './ClubList.css'
 import {useState} from 'react'
+import { RxCross2 } from "react-icons/rx";
 function ClubList({name,description,categories,time,location}) {
   const [isOpen, setIsOpen] = useState(false);
   return (
@@ -26,9 +27,24 @@ function ClubList({name,description,categories,time,location}) {
       </div>
       {isOpen && (
         <div className="popup-overlay" onClick={() => setIsOpen(false)}>
-          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Popup Content</h2>
-            <button onClick={() => setIsOpen(false)}>Close</button>
+          <div className="popup-box" onClick={(e) => e.stopPropagation()}>
+            <RxCross2 class="closebutton" size={30}
+              onClick={() => setIsOpen(false)} 
+              style={{ cursor: 'pointer' }}  />
+            <div className="popupContent">
+              <h1>{name}</h1>
+              <hr></hr>
+              <h4>Contact Info:</h4>
+              <h4>President: pres</h4>
+              <h4>Co-President: copres</h4>
+              <h4>Teacher: teacher</h4>
+              <h4>Location: {location}</h4>
+              <h4>Time: {time}</h4>
+              <h4>Acceptance: Free to Join</h4>
+              <p>{description}. 
+                 So like this is just a long placeholder description I put here to take up space and see how this will look, please ignore the following long paragraph about starfish. Starfish, more accurately known as sea stars, are fascinating marine invertebrates belonging to the phylum Echinodermata, meaning they are closely related to sea urchins and sea cucumbers rather than fish. With over 2,000 species inhabiting all of the world's oceans, from tropical reefs to cold, deep-sea floors, they are characterized by a central disc and typically five arms, though some species can have up to 40. Lacking a brain or blood, sea stars use a unique "water vascular system" to pump filtered seawater through their bodies to operate hundreds of tiny tube feet, which are used for movement, gripping surfaces, and capturing prey.
+                </p>
+            </div>
           </div>
         </div>
       )}
