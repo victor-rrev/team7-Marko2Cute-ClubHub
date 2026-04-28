@@ -8,6 +8,11 @@ body {
   min-height: 100vh;
 }
 
+.main-content {
+  margin-left: 200px;
+  padding: 20px;
+}
+
 .header {
   position: fixed;
   top: 30px;
