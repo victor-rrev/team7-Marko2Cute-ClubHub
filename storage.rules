@@ -1,0 +1,75 @@
+rules_version = '2';
+
+// ClubHub Cloud Storage security rules.
+// Mirrors the Storage layout in docs/data-model.md.
+// Reads via firestore.* let us derive write permissions from membership/role
+// without duplicating club-roster state in Storage metadata.
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // --- Helpers ------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isUser(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function isImageUpload() {
+      return request.resource.contentType.matches('image/.*')
+        && request.resource.size < 5 * 1024 * 1024; // 5 MB cap
+    }
+    function membershipExists(clubId) {
+      return isSignedIn()
+        && firestore.exists(
+          /databases/(default)/documents/memberships/$(request.auth.uid + '_' + clubId)
+        );
+    }
+    function getMembership(clubId) {
+      return firestore.get(
+        /databases/(default)/documents/memberships/$(request.auth.uid + '_' + clubId)
+      ).data;
+    }
+    function isClubAdmin(clubId) {
+      return membershipExists(clubId)
+        && getMembership(clubId).status == 'active'
+        && getMembership(clubId).role in ['admin', 'owner'];
+    }
+
+    // --- Club logos / banners -----------------------------------------
+    match /clubs/{clubId}/{filename} {
+      allow read: if isSignedIn();
+      // request.resource is null on delete — skip image-content check then.
+      allow write: if isClubAdmin(clubId)
+        && (request.resource == null || isImageUpload());
+    }
+
+    // --- Event posters ------------------------------------------------
+    match /events/{eventId}/{filename} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+        && (request.resource == null || isImageUpload())
+        && firestore.exists(/databases/(default)/documents/events/$(eventId))
+        && isClubAdmin(
+          firestore.get(/databases/(default)/documents/events/$(eventId)).data.clubId
+        );
+    }
+
+    // --- Post media (only the post's author can upload) ---------------
+    match /posts/{postId}/media/{filename} {
+      allow read: if isSignedIn();
+      allow write: if isSignedIn()
+        && (request.resource == null || isImageUpload())
+        && firestore.exists(/databases/(default)/documents/posts/$(postId))
+        && firestore.get(/databases/(default)/documents/posts/$(postId)).data.authorId == request.auth.uid;
+    }
+
+    // --- User-uploaded avatars ----------------------------------------
+    match /users/{uid}/{filename} {
+      allow read: if isSignedIn();
+      allow write: if isUser(uid)
+        && (request.resource == null || isImageUpload());
+    }
+  }
+}

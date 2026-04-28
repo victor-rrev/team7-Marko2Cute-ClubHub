@@ -1,0 +1,12 @@
+node_modules/
+*.local
+
+# Functions runtime config (any .env files)
+.env*
+
+# Firebase CLI debug logs
+firebase-debug.log*
+
+# Firebase Admin SDK keys
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
