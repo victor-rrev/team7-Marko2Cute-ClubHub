@@ -12,6 +12,9 @@ dist
 dist-ssr
 *.local
 
+# Firebase
+.firebase/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
@@ -22,3 +25,18 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+.env
+.env.test
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# Editor backups
+*.bak
+*~
+
+# Firebase Admin SDK keys (never commit)
+serviceAccountKey.json
+*-firebase-adminsdk-*.json
+*service-account*.json

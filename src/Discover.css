@@ -1,3 +1,11 @@
 #clubs{
-    margin-top:125px;
+    overflow:hidden;
+}
+.sticky-header {
+  position: sticky;
+  top: 0;
+  height:125px;
+  z-index: 100;
+  background: #FFEFEF;
+  margin-left: 30px;
 }
