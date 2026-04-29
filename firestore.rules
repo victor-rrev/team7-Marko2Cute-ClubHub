@@ -1,0 +1,439 @@
+rules_version = '2';
+
+// ClubHub Firestore security rules.
+// Mirrors the schema in docs/data-model.md.
+// Constants (categories, grade levels, pronouns, reactions) are duplicated
+// here from src/lib/constants.js — keep in sync when one changes.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // --- Helpers ------------------------------------------------------
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+    function isUser(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+    function getMembership(clubId) {
+      return get(/databases/$(database)/documents/memberships/$(request.auth.uid + '_' + clubId)).data;
+    }
+    function membershipExists(clubId) {
+      return exists(/databases/$(database)/documents/memberships/$(request.auth.uid + '_' + clubId));
+    }
+    function isActiveMember(clubId) {
+      return isSignedIn()
+        && membershipExists(clubId)
+        && getMembership(clubId).status == 'active';
+    }
+    function isClubAdmin(clubId) {
+      return isActiveMember(clubId) && getMembership(clubId).role in ['admin', 'owner'];
+    }
+    function isClubOwner(clubId) {
+      return isActiveMember(clubId) && getMembership(clubId).role == 'owner';
+    }
+    function getClub(clubId) {
+      return get(/databases/$(database)/documents/clubs/$(clubId)).data;
+    }
+
+    // --- Constants (duplicated from src/lib/constants.js) -------------
+
+    function validCategories(arr) {
+      return arr is list
+        && arr.size() >= 1
+        && arr.size() <= 5
+        && arr.hasOnly([
+          'Academic', 'Arts', 'Athletic', 'Cultural',
+          'Service & Volunteering', 'Religious & Spiritual',
+          'STEM', 'Creative Writing', 'Hobbies & Games',
+          'Wellness', 'Career & Professional', 'Politics & Activism'
+        ]);
+    }
+    function validGradeLevel(g) {
+      return g in ['freshman', 'sophomore', 'junior', 'senior'];
+    }
+    function validPronouns(p) {
+      return p in ['he/him', 'she/her', 'they/them'];
+    }
+    function validReaction(e) {
+      return e in ['👍', '❤️', '🎉', '😂', '😮', '🔥'];
+    }
+    function validRole(r) {
+      return r in ['owner', 'admin', 'member'];
+    }
+    function validJoinPolicy(j) {
+      return j in ['open', 'approval'];
+    }
+    function validPostScope(s) {
+      return s in ['club', 'global', 'both'];
+    }
+    function validRsvpState(s) {
+      return s in ['going', 'maybe', 'not_going'];
+    }
+
+    // --- users --------------------------------------------------------
+
+    match /users/{uid} {
+      allow read: if isSignedIn();
+
+      allow create: if isUser(uid)
+        && request.resource.data.keys().hasAll(['email', 'createdAt', 'clubsJoined'])
+        && request.resource.data.keys().hasOnly([
+          'displayName', 'email', 'photoURL',
+          'gradeLevel', 'pronouns', 'onboardedAt',
+          'clubsJoined',
+          'createdAt', 'updatedAt', 'deletedAt'
+        ])
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.clubsJoined is list
+        && request.resource.data.clubsJoined.size() == 0
+        && request.resource.data.createdAt == request.time
+        && !('onboardedAt' in request.resource.data)
+        && (!('gradeLevel' in request.resource.data) || validGradeLevel(request.resource.data.gradeLevel))
+        && (!('pronouns' in request.resource.data) || validPronouns(request.resource.data.pronouns));
+
+      allow update: if isUser(uid)
+        && request.resource.data.keys().hasOnly([
+          'displayName', 'email', 'photoURL',
+          'gradeLevel', 'pronouns', 'onboardedAt',
+          'clubsJoined',
+          'createdAt', 'updatedAt', 'deletedAt'
+        ])
+        // Immutable
+        && request.resource.data.email == resource.data.email
+        && request.resource.data.createdAt == resource.data.createdAt
+        // clubsJoined is managed only by Cloud Functions (which bypass rules)
+        && request.resource.data.clubsJoined == resource.data.clubsJoined
+        // Validate when present
+        && (!('gradeLevel' in request.resource.data) || validGradeLevel(request.resource.data.gradeLevel))
+        && (!('pronouns' in request.resource.data) || validPronouns(request.resource.data.pronouns));
+
+      allow delete: if isUser(uid);
+    }
+
+    // --- clubs --------------------------------------------------------
+
+    match /clubs/{clubId} {
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll([
+          'name', 'description', 'categories', 'meetingSchedule',
+          'externalLinks', 'joinPolicy', 'customRoles',
+          'memberCount', 'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'name', 'description', 'categories', 'meetingSchedule',
+          'contactEmail', 'externalLinks', 'joinPolicy', 'customRoles',
+          'logoPath', 'bannerPath', 'memberCount',
+          'createdBy', 'createdAt', 'updatedAt', 'deletedAt'
+        ])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 5000
+        && validCategories(request.resource.data.categories)
+        && request.resource.data.meetingSchedule is string
+        && request.resource.data.externalLinks is list
+        && request.resource.data.externalLinks.size() <= 10
+        && validJoinPolicy(request.resource.data.joinPolicy)
+        && request.resource.data.customRoles is list
+        && request.resource.data.customRoles.size() <= 20
+        && request.resource.data.memberCount == 0
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        // deletedAt may be omitted or explicitly null at creation. Writing
+        // null lets `where('deletedAt', '==', null)` queries match new clubs;
+        // Firestore '== null' does NOT match docs where the field is absent.
+        && (!('deletedAt' in request.resource.data)
+            || request.resource.data.deletedAt == null);
+
+      allow update: if isClubAdmin(clubId)
+        && request.resource.data.keys().hasOnly([
+          'name', 'description', 'categories', 'meetingSchedule',
+          'contactEmail', 'externalLinks', 'joinPolicy', 'customRoles',
+          'logoPath', 'bannerPath', 'memberCount',
+          'createdBy', 'createdAt', 'updatedAt', 'deletedAt'
+        ])
+        // Immutable
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        // memberCount maintained by Function only
+        && request.resource.data.memberCount == resource.data.memberCount
+        // Only owner can change joinPolicy
+        && (request.resource.data.joinPolicy == resource.data.joinPolicy || isClubOwner(clubId))
+        // Validation
+        && validCategories(request.resource.data.categories)
+        && validJoinPolicy(request.resource.data.joinPolicy)
+        && request.resource.data.name is string
+        && request.resource.data.name.size() > 0
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.customRoles is list
+        && request.resource.data.customRoles.size() <= 20
+        && request.resource.data.externalLinks is list
+        && request.resource.data.externalLinks.size() <= 10;
+
+      allow delete: if isClubOwner(clubId);
+    }
+
+    // --- memberships --------------------------------------------------
+    // Doc ID is deterministic: "{userId}_{clubId}"
+
+    match /memberships/{membershipId} {
+      allow read: if isSignedIn();
+
+      allow create: if isSignedIn()
+        && request.resource.data.keys().hasAll([
+          'userId', 'clubId', 'role', 'customRoles', 'status'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'userId', 'clubId', 'role', 'customRoles', 'status',
+          'nickname', 'joinedAt', 'requestedAt'
+        ])
+        && request.resource.data.userId == request.auth.uid
+        && membershipId == request.resource.data.userId + '_' + request.resource.data.clubId
+        && validRole(request.resource.data.role)
+        && request.resource.data.customRoles is list
+        && request.resource.data.customRoles.size() == 0
+        && (
+          // Founder seeding their owner membership for a club they just created
+          (request.resource.data.role == 'owner'
+            && request.resource.data.status == 'active'
+            && getClub(request.resource.data.clubId).createdBy == request.auth.uid)
+          // Open join — instant membership
+          || (request.resource.data.role == 'member'
+            && request.resource.data.status == 'active'
+            && getClub(request.resource.data.clubId).joinPolicy == 'open')
+          // Approval-mode — pending request
+          || (request.resource.data.role == 'member'
+            && request.resource.data.status == 'pending'
+            && getClub(request.resource.data.clubId).joinPolicy == 'approval')
+        );
+
+      allow update: if isSignedIn()
+        // Immutable identity fields
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.clubId == resource.data.clubId
+        && validRole(request.resource.data.role)
+        && request.resource.data.status in ['pending', 'active']
+        && (
+          // User editing their own nickname only
+          (isUser(resource.data.userId)
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.status == resource.data.status
+            && request.resource.data.customRoles == resource.data.customRoles)
+          // Admin approving (pending → active) or assigning custom roles, no role change
+          || (isClubAdmin(resource.data.clubId)
+            && request.resource.data.role == resource.data.role)
+          // Owner changing role (status untouched here)
+          || (isClubOwner(resource.data.clubId)
+            && request.resource.data.status == resource.data.status)
+        );
+
+      // Owner cannot delete their own membership — must transfer first.
+      allow delete: if resource.data.role != 'owner'
+        && (isUser(resource.data.userId) || isClubAdmin(resource.data.clubId));
+    }
+
+    // --- events -------------------------------------------------------
+
+    match /events/{eventId} {
+      allow read: if isSignedIn();
+
+      allow create: if isClubAdmin(request.resource.data.clubId)
+        && request.resource.data.keys().hasAll([
+          'clubId', 'title', 'description', 'location', 'startsAt',
+          'createdBy', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'clubId', 'title', 'description', 'location', 'posterPath',
+          'startsAt', 'endsAt', 'recurrence',
+          'createdBy', 'createdAt', 'updatedAt', 'deletedAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 5000
+        && request.resource.data.location is string
+        && request.resource.data.startsAt is timestamp
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if isClubAdmin(resource.data.clubId)
+        && request.resource.data.keys().hasOnly([
+          'clubId', 'title', 'description', 'location', 'posterPath',
+          'startsAt', 'endsAt', 'recurrence',
+          'createdBy', 'createdAt', 'updatedAt', 'deletedAt'
+        ])
+        // Immutable
+        && request.resource.data.clubId == resource.data.clubId
+        && request.resource.data.createdBy == resource.data.createdBy
+        && request.resource.data.createdAt == resource.data.createdAt
+        // Validation
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.startsAt is timestamp;
+
+      allow delete: if isClubAdmin(resource.data.clubId);
+
+      // RSVPs — per-instance for recurring events.
+      // Doc ID format: "{occurrenceISO}_{userId}"
+      match /rsvps/{rsvpId} {
+        // Single-doc reads: the user themselves can read their own RSVP;
+        // a club admin/owner can read any. List queries (attendee lists)
+        // are admin/owner-only — members cannot enumerate who's going.
+        // The split is necessary because Firestore Rules can't evaluate
+        // `resource.data` for list queries; mixing a per-doc check with
+        // an admin check via OR fails the whole rule on list.
+        // For non-existent docs (e.g., a getDoc-before-write existence
+        // check), `resource` is null and `resource.data.userId` would
+        // throw — so let signed-in users pass that wall; there's nothing
+        // sensitive to leak from a doc that doesn't exist.
+        allow get: if isSignedIn() && (
+          resource == null
+          || isUser(resource.data.userId)
+          || isClubAdmin(get(/databases/$(database)/documents/events/$(eventId)).data.clubId)
+        );
+        allow list: if isClubAdmin(get(/databases/$(database)/documents/events/$(eventId)).data.clubId);
+
+        allow create: if isUser(request.resource.data.userId)
+          && request.resource.data.keys().hasAll([
+            'userId', 'occurrenceAt', 'state', 'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'userId', 'occurrenceAt', 'state', 'createdAt', 'updatedAt'
+          ])
+          && rsvpId.matches('^.+_' + request.auth.uid + '$')
+          && validRsvpState(request.resource.data.state)
+          && request.resource.data.occurrenceAt is timestamp
+          && request.resource.data.createdAt == request.time;
+
+        allow update: if isUser(resource.data.userId)
+          && request.resource.data.userId == resource.data.userId
+          && request.resource.data.occurrenceAt == resource.data.occurrenceAt
+          && request.resource.data.createdAt == resource.data.createdAt
+          && validRsvpState(request.resource.data.state);
+
+        allow delete: if isUser(resource.data.userId);
+      }
+    }
+
+    // --- posts --------------------------------------------------------
+
+    match /posts/{postId} {
+      allow read: if isSignedIn();
+
+      allow create: if isActiveMember(request.resource.data.clubId)
+        && request.resource.data.keys().hasAll([
+          'clubId', 'authorId', 'scope', 'body', 'mediaPaths',
+          'commentCount', 'reactionCount', 'createdAt', 'updatedAt'
+        ])
+        && request.resource.data.keys().hasOnly([
+          'clubId', 'authorId', 'scope', 'body', 'mediaPaths',
+          'commentCount', 'reactionCount',
+          'createdAt', 'updatedAt', 'deletedAt'
+        ])
+        && request.resource.data.authorId == request.auth.uid
+        && validPostScope(request.resource.data.scope)
+        // Members can create club-scope posts; only admin/owner can promote
+        && (request.resource.data.scope == 'club' || isClubAdmin(request.resource.data.clubId))
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0
+        && request.resource.data.body.size() <= 10000
+        && request.resource.data.mediaPaths is list
+        && request.resource.data.mediaPaths.size() <= 10
+        && request.resource.data.commentCount == 0
+        && request.resource.data.reactionCount == 0
+        && request.resource.data.createdAt == request.time;
+
+      allow update: if (isUser(resource.data.authorId) || isClubAdmin(resource.data.clubId))
+        && request.resource.data.keys().hasOnly([
+          'clubId', 'authorId', 'scope', 'body', 'mediaPaths',
+          'commentCount', 'reactionCount',
+          'createdAt', 'updatedAt', 'deletedAt'
+        ])
+        // Immutable
+        && request.resource.data.clubId == resource.data.clubId
+        && request.resource.data.authorId == resource.data.authorId
+        && request.resource.data.createdAt == resource.data.createdAt
+        // Counts maintained by Function only
+        && request.resource.data.commentCount == resource.data.commentCount
+        && request.resource.data.reactionCount == resource.data.reactionCount
+        // Scope change requires admin/owner
+        && (request.resource.data.scope == resource.data.scope || isClubAdmin(resource.data.clubId))
+        && validPostScope(request.resource.data.scope)
+        && request.resource.data.body is string
+        && request.resource.data.body.size() > 0;
+
+      allow delete: if isUser(resource.data.authorId) || isClubAdmin(resource.data.clubId);
+
+      // Threaded comments
+      match /comments/{commentId} {
+        allow read: if isSignedIn();
+
+        allow create: if isSignedIn()
+          && request.resource.data.keys().hasAll([
+            'authorId', 'body', 'parentCommentId', 'replyCount', 'reactionCount',
+            'createdAt', 'updatedAt'
+          ])
+          && request.resource.data.keys().hasOnly([
+            'authorId', 'body', 'parentCommentId', 'replyCount', 'reactionCount',
+            'createdAt', 'updatedAt', 'deletedAt'
+          ])
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.body is string
+          && request.resource.data.body.size() > 0
+          && request.resource.data.body.size() <= 5000
+          && request.resource.data.replyCount == 0
+          && request.resource.data.reactionCount == 0
+          // Either top-level (parent == null) or pointing at an existing sibling comment
+          && (
+            request.resource.data.parentCommentId == null
+            || exists(/databases/$(database)/documents/posts/$(postId)/comments/$(request.resource.data.parentCommentId))
+          )
+          && request.resource.data.createdAt == request.time;
+
+        allow update: if isUser(resource.data.authorId)
+          && request.resource.data.authorId == resource.data.authorId
+          && request.resource.data.parentCommentId == resource.data.parentCommentId
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.replyCount == resource.data.replyCount
+          && request.resource.data.reactionCount == resource.data.reactionCount
+          && request.resource.data.body is string
+          && request.resource.data.body.size() > 0;
+
+        allow delete: if isUser(resource.data.authorId)
+          || isClubAdmin(get(/databases/$(database)/documents/posts/$(postId)).data.clubId);
+
+        // Reactions on comments — doc ID "{userId}_{emoji}"
+        match /reactions/{reactionId} {
+          allow read: if isSignedIn();
+
+          allow create: if isUser(request.resource.data.userId)
+            && request.resource.data.keys().hasOnly(['userId', 'emoji', 'createdAt'])
+            && reactionId.matches('^' + request.auth.uid + '_.+$')
+            && validReaction(request.resource.data.emoji)
+            && request.resource.data.createdAt == request.time;
+
+          allow delete: if isUser(resource.data.userId);
+        }
+      }
+
+      // Reactions on posts — doc ID "{userId}_{emoji}"
+      match /reactions/{reactionId} {
+        allow read: if isSignedIn();
+
+        allow create: if isUser(request.resource.data.userId)
+          && request.resource.data.keys().hasOnly(['userId', 'emoji', 'createdAt'])
+          && reactionId.matches('^' + request.auth.uid + '_.+$')
+          && validReaction(request.resource.data.emoji)
+          && request.resource.data.createdAt == request.time;
+
+        allow delete: if isUser(resource.data.userId);
+      }
+    }
+  }
+}
