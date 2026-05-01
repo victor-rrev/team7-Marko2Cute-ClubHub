@@ -1,4 +1,5 @@
 import './Events.css'
+import {FiCalendar} from 'react-icons/fi';
 import ClubList from './ClubList.jsx'
 function Events(){
     return(
@@ -10,6 +11,9 @@ function Events(){
             <div className="sportsEvents">
                 <ClubList name="Baseball tryouts" description="tryout to join baseball team" categories="fun" time="yesterday" location="PTMS Quad"/>
                 <ClubList name="B Club" description="We draw Bs" categories="fun" time="never" location="CCA"/>
+            </div>
+            <div className="calendar">
+                <FiCalendar size = {60} />
             </div>
         </div>
     )
