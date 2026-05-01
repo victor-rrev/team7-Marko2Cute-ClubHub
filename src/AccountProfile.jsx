@@ -2,18 +2,12 @@ import './AccountProfile.css';
 import { FiUser } from 'react-icons/fi';
 
 function AccountProfile({ variant = 'small' }) {
-
-  if (variant === "large") {
-    return (
-        <div className="account-profile-large">
-        <FiUser size={150} />
-        </div>
-    )
-  }
+  const size = variant === 'large' ? 100 : 30;
+  const className = variant === 'large' ? 'account-profile-large' : 'account-profile';
 
   return (
-    <div className="account-profile">
-      <FiUser size={30} />
+    <div className={className}>
+      <FiUser size={size} />
     </div>
   );
 }
