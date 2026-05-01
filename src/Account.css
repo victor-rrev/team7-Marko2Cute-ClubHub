@@ -1,0 +1,245 @@
+.account-page {
+  display: flex;
+  gap: 32px;
+  padding: 40px 20px;
+  align-items: flex-start;
+  min-height: 100vh;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* ── Left column ── */
+.account-left {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+}
+
+.avatar-circle {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  background: #e8e8e8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-start;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  overflow: hidden;
+}
+
+/* ── Cards ── */
+.account-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px 28px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+}
+
+.profile-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.profile-name {
+  font-size: 26px;
+  margin: 0;
+  color: #111;
+}
+
+.profile-bio {
+  color: #555;
+  font-size: 15px;
+  line-height: 1.5;
+  word-break: break-word;
+  overflow-wrap: break-word;
+}
+
+.card-heading {
+  font-size: 20px;
+  margin: 0 0 14px;
+  color: #111;
+}
+
+/* ── Lists ── */
+.acct-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  color: #444;
+  font-size: 15px;
+}
+
+.events-list li {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 6px;
+}
+
+.ev-label { font-weight: 600; }
+.ev-time  { color: #777; }
+
+/* ── Edit inputs ── */
+.edit-name-input {
+  width: 100%;
+  font-size: 22px;
+  font-weight: 700;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.edit-bio-input {
+  width: 100%;
+  font-size: 15px;
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  padding: 8px 12px;
+  margin-bottom: 10px;
+  resize: vertical;
+  outline: none;
+  box-sizing: border-box;
+}
+
+/* ── Buttons ── */
+.acct-btn {
+  background: #E8420A;
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 20px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background 0.2s;
+}
+.acct-btn:hover { background: #c93f0d; }
+
+.acct-btn-outline {
+  background: none;
+  border: 2px solid #E8420A;
+  color: #E8420A;
+  border-radius: 12px;
+  padding: 6px 16px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+.acct-btn-outline:hover {
+  background: #E8420A;
+  color: white;
+}
+
+/* ── Right column ── */
+.account-right {
+  width: 340px;
+  flex-shrink: 0;
+  position: sticky;
+  top: 40px;
+}
+
+.calendar-card {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.empty-state {
+  color: #aaa;
+  font-size: 14px;
+  margin: 0;
+}
+
+.profile-row {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 24px;
+}
+
+.profile-card {
+  flex: 1;
+  
+  min-width: 0;
+  overflow-wrap: break-word;
+}
+
+.bio-input-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.char-count {
+  font-size: 12px;
+  color: #aaa;
+  text-align: right;
+  margin-top: 4px;
+}
+
+.char-count.at-limit {
+  color: #E8420A;
+  font-weight: 700;
+}
+
+.google-login-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 50%;
+  padding: 12px 0;
+  border: 2px solid #ddd;
+  border-radius: 16px;
+  background: white;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  transition: box-shadow 0.2s, border-color 0.2s;
+}
+
+.google-login-btn:hover {
+  box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+  border-color: #bbb;
+}
+
+.google-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.limit-popup {
+  background: white;
+  border-radius: 20px;
+  padding: 32px;
+  max-width: 360px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: center;
+}
+
+.limit-popup h3 {
+  margin: 0;
+  font-size: 20px;
+  color: #111;
+}
+
+.limit-popup p {
+  margin: 0;
+  color: #555;
+  font-size: 15px;
+}
