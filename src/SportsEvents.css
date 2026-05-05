@@ -2,13 +2,13 @@
     overflow:hidden;
     padding-bottom:6rem;
 }
-.sticky-header {
+.backbutton {
     position: fixed;
     bottom: 20px;
     left: 50%;
     font-size:106.7%;
     transform: translateX(-50%);
-    background-color: rgb(210, 60, 60);
+    background-color: rgb(255, 157, 157);
     z-index: 100;
     padding: 1rem 2rem;
     box-shadow: 0 2px 5px rgba(0,0,0,0.1);

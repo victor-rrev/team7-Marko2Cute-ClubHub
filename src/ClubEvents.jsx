@@ -13,7 +13,7 @@ function ClubEvents(){
                 <ClubList name="E Club" description="We draw Es" categories="fun" time="never" location="CCA"/>
             </div>
             <Link to="/Events">
-                <button className="sticky-header">Back</button>
+                <button className="backbutton">Back</button>
             </Link>
         </div>
     )
