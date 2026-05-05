@@ -2,6 +2,8 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import {
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   signOut as fbSignOut,
 } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
@@ -41,11 +43,17 @@ export function AuthProvider({ children }) {
     });
   }, [user]);
 
-  async function signIn() {
-    const result = await signInWithPopup(auth, googleProvider);
-    await ensureUserDoc(result.user);
-  }
+useEffect(() => {
+  getRedirectResult(auth).then(async (result) => {
+    if (result?.user) {
+      await ensureUserDoc(result.user)
+    }
+  }).catch(console.error)
+}, [])
 
+async function signIn() {
+  await signInWithRedirect(auth, googleProvider)
+}
   function signOut() {
     return fbSignOut(auth);
   }
