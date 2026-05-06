@@ -11,6 +11,7 @@ import Account from './Account.jsx'
 import AccountProfile from './AccountProfile.jsx'
 import Onboarding from './Onboarding.jsx'
 import { useAuth } from './contexts/AuthContext'
+import { Link } from 'react-router-dom'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 
 function AppContent() {
@@ -59,7 +60,9 @@ function AppContent() {
   return (
     <div className="app">
       <Sidebar />
-      {location.pathname !== '/account' && <AccountProfile />}
+      <Link to="/account">
+        {location.pathname !== '/account' && <AccountProfile />}
+      </Link>
       <main className="main-content">
         {location.pathname === '/discover' && (
           <header className="header">

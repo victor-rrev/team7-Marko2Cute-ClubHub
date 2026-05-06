@@ -1,11 +1,15 @@
 #clubs{
     overflow:hidden;
     padding-bottom:6rem;
+    margin-left:30px;
+    display:flex;
+    flex-direction: column;
+    gap: 12px;
 }
 .backbutton {
     position: fixed;
     bottom: 20px;
-    left: 50%;
+    left: 55.555%;
     font-size:106.7%;
     transform: translateX(-50%);
     background-color: rgb(255, 157, 157);
@@ -22,6 +26,7 @@
     color: rgb(67, 12, 12);
     display:flex;
     justify-content: center;
+    transform:translateX(8vw);
     position:relative;
     margin-top:20px;
     margin-bottom:40px;

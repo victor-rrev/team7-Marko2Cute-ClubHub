@@ -42,14 +42,25 @@ const SAMPLE_CLUBS = [
 ]
 
 function Discover() {
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  const [selectedCategories, setSelectedCategories] = useState([])
+  const [selectedDays, setSelectedDays] = useState([])
 
   const visibleClubs = useMemo(() => {
-    if (selectedCategory === 'All') return SAMPLE_CLUBS
-    return SAMPLE_CLUBS.filter((club) =>
-      Array.isArray(club.categories) && club.categories.includes(selectedCategory),
-    )
-  }, [selectedCategory])
+    let clubs = SAMPLE_CLUBS
+    if (selectedCategories.length > 0) {
+      clubs = clubs.filter((club) =>
+        club.categories.some((cat) => selectedCategories.includes(cat))
+      )
+    }
+    if (selectedDays.length > 0) {
+      clubs = clubs.filter((club) =>
+        selectedDays.some((day) =>
+          club.time.toLowerCase().includes(day.toLowerCase())
+        )
+      )
+    }
+    return clubs
+  }, [selectedCategories, selectedDays])
 
   return (
     <div className="discover-page">
@@ -69,20 +80,52 @@ function Discover() {
           <div className="filter-panel">
             <h3>Filter by category</h3>
             <button
-              className={selectedCategory === 'All' ? 'filter-chip active' : 'filter-chip'}
-              onClick={() => setSelectedCategory('All')}
+              className={selectedCategories.length === 0 ? 'filter-chip active' : 'filter-chip'}
+              onClick={() => setSelectedCategories([])}
             >
               All
             </button>
             {CATEGORIES.map((category) => (
               <button
                 key={category}
-                className={selectedCategory === category ? 'filter-chip active' : 'filter-chip'}
-                onClick={() => setSelectedCategory(category)}
+                className={selectedCategories.includes(category) ? 'filter-chip active' : 'filter-chip'}
+                onClick={() => {
+                  if (selectedCategories.includes(category)) {
+                    setSelectedCategories(selectedCategories.filter(c => c !== category))
+                  } else {
+                    setSelectedCategories([...selectedCategories, category])
+                  }
+                }}
               >
                 {category}
               </button>
             ))}
+            <h3>Filter by day</h3>
+            {['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'].map((day) => (
+              <button
+                key={day}
+                className={selectedDays.includes(day) ? 'filter-chip active' : 'filter-chip'}
+                onClick={() => {
+                  if (selectedDays.includes(day)) {
+                    setSelectedDays(selectedDays.filter(d => d !== day))
+                  } else {
+                    setSelectedDays([...selectedDays, day])
+                  }
+                }}
+              >
+                {day}
+              </button>
+            ))}
+            <br></br>
+            <button
+              className="clear-filters"
+              onClick={() => {
+                setSelectedCategories([])
+                setSelectedDays([])
+              }}
+            >
+              Clear All Filters
+            </button>
           </div>
         </aside>
       </div>

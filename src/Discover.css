@@ -29,15 +29,16 @@
 .discover-clubs {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
 }
 
 .discover-filter {
   position: fixed;
   top: 24px;
   align-self: start;
-  transform: translateX(65vw) translateY(16.7vh);
-  width:16.7vw;
+  transform: translateX(62vw) translateY(16vh);
+  width:18vw;
+  flex-direction: column;
 }
 
 .filter-panel {
@@ -45,6 +46,8 @@
   border-radius: 24px;
   padding: 20px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  max-height: 60vh;
+  overflow-y: auto;
 }
 
 .filter-panel h3 {
@@ -95,5 +98,5 @@
   background: #FFEFEF;
   margin-left: 1vw;
   transform:translateX(-20px);
-  width: 80%;
+  width: 75.5%;
 }

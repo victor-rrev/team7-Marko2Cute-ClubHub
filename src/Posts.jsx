@@ -156,6 +156,7 @@
 
 
 import { useState } from 'react'
+import { RxCross2 } from "react-icons/rx";
 import './Posts.css'
 
 const MOCK_POSTS = [
@@ -337,6 +338,7 @@ function PostCard({ post }) {
 }
 
 export default function Posts() {
+  const [isOpen, setIsOpen] = useState(false);
   const [sort, setSort] = useState('Both')
 
   const filtered = MOCK_POSTS.filter(p => {
@@ -373,8 +375,21 @@ export default function Posts() {
         </div>
       )}
 
-      <button className="posts-add-btn" title="New post">+</button>
-
+      <button className="posts-add-btn" title="New post"
+                onClick={() => setIsOpen(true)} 
+                style={{ cursor: 'pointer' }}>+</button>
+      {isOpen && (
+        <div onClick={() => setIsOpen(false)}>
+          <div className="calendar-box" onClick={(e) => e.stopPropagation()}>
+            <RxCross2 class="closebutton" size={30}
+              onClick={() => setIsOpen(false)} 
+              style={{ cursor: 'pointer' }}  />
+            <div className="popupContent">
+              <h2>Calendar</h2>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
