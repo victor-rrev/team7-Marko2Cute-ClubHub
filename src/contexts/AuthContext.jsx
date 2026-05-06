@@ -1,8 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import {
   onAuthStateChanged,
-  signInWithPopup,
   signInWithRedirect,
+  signInWithPopup,
   getRedirectResult,
   signOut as fbSignOut,
 } from 'firebase/auth';
@@ -15,44 +15,55 @@ import {
 
 const AuthContext = createContext(null);
 
-/**
- * Wraps the app with auth + user-doc state. Subscribes to the current
- * user's Firestore doc via `onSnapshot` so onboarding state and profile
- * edits propagate live. Place once near the root, above any component
- * that calls `useAuth`. Already mounted in `src/main.jsx`.
- */
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [userDoc, setUserDoc] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    return onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
-  }, []);
+  // Handle auth state changes AND redirect result together
+  // useEffect(() => {
+  //   const unsubscribe = onAuthStateChanged(auth, async (u) => {
+  //     if (u) {
+  //       await ensureUserDoc(u);
+  //       setUser(u);
+  //     } else {
+  //       // Check if we're returning from a redirect
+  //       try {
+  //         const result = await getRedirectResult(auth);
+  //         if (result?.user) {
+  //           await ensureUserDoc(result.user);
+  //           setUser(result.user);
+  //         } else {
+  //           setUser(null);
+  //         }
+  //       } catch (err) {
+  //         console.error('Redirect result error:', err);
+  //         setUser(null);
+  //       }
+  //     }
+  //     setLoading(false);
+  //   });
+  //   return unsubscribe;
+  // }, []);
 
   useEffect(() => {
-    if (!user) {
-      setUserDoc(null);
-      return undefined;
+  const unsubscribe = onAuthStateChanged(auth, async (u) => {
+    if (u) {
+      await ensureUserDoc(u);
     }
-    return onSnapshot(doc(db, 'users', user.uid), (snap) => {
-      setUserDoc(snap.exists() ? snap.data() : null);
-    });
-  }, [user]);
-
-useEffect(() => {
-  getRedirectResult(auth).then(async (result) => {
-    if (result?.user) {
-      await ensureUserDoc(result.user)
-    }
-  }).catch(console.error)
-}, [])
+    setUser(u);
+    setLoading(false);
+  });
+  return unsubscribe;
+}, []);
 
 async function signIn() {
-  await signInWithRedirect(auth, googleProvider)
+  try {
+    const result = await signInWithPopup(auth, googleProvider);
+    await ensureUserDoc(result.user);
+  } catch (err) {
+    console.error('Sign in error:', err);
+  }
 }
   function signOut() {
     return fbSignOut(auth);
@@ -82,26 +93,6 @@ async function signIn() {
   );
 }
 
-/**
- * Returns the current auth state and actions.
- *
- * @returns {{
- *   user: import('firebase/auth').User | null,
- *   userDoc: object | null,
- *   loading: boolean,
- *   isOnboarded: boolean,
- *   signIn: () => Promise<void>,
- *   signOut: () => Promise<void>,
- *   completeOnboarding: (input: { gradeLevel: string, pronouns: string }) => Promise<void>,
- * }}
- *
- * @example
- *   const { user, userDoc, loading, isOnboarded, signIn, completeOnboarding } = useAuth();
- *   if (loading) return <Spinner />;
- *   if (!user) return <button onClick={signIn}>Sign in</button>;
- *   if (!isOnboarded) return <OnboardingForm onSubmit={completeOnboarding} />;
- *   return <App />;
- */
 export function useAuth() {
   const ctx = useContext(AuthContext);
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
