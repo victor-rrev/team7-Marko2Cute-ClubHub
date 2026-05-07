@@ -5,17 +5,20 @@ import Sidebar from './Sidebar.jsx'
 import Discover from './Discover.jsx'
 import Posts from './Posts.jsx'
 import Events from './Events.jsx'
+import SportsEvents from './SportsEvents.jsx'
+import ClubEvents from './ClubEvents.jsx'
 import Account from './Account.jsx'
 import AccountProfile from './AccountProfile.jsx'
 import Onboarding from './Onboarding.jsx'
 import { useAuth } from './contexts/AuthContext'
+import { Link } from 'react-router-dom'
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
 
 function AppContent() {
   const [searchTerm, setSearchTerm] = useState('')
   const location = useLocation()
   const { user, loading, isOnboarded, signIn } = useAuth()
-
+  /*
   // 1. Still resolving auth state
   if (loading) {
     return (
@@ -53,10 +56,13 @@ function AppContent() {
   }
 
   // 4. Fully signed in and onboarded — show the app
+  */
   return (
     <div className="app">
       <Sidebar />
-      {location.pathname !== '/account' && <AccountProfile />}
+      <Link to="/account">
+        {location.pathname !== '/account' && <AccountProfile />}
+      </Link>
       <main className="main-content">
         {location.pathname === '/discover' && (
           <header className="header">
@@ -78,6 +84,8 @@ function AppContent() {
           <Route path="/discover" element={<Discover />} />
           <Route path="/posts" element={<Posts />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/SportsEvents" element={<SportsEvents />} />
+          <Route path="/ClubEvents" element={<ClubEvents />} />
           <Route path="/account" element={<Account />} />
         </Routes>
       </main>

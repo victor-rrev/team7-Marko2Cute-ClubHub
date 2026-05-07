@@ -2,7 +2,7 @@
   position: fixed;
   top: 20px;
   right: 20px;
-  z-index: 999;
+  z-index: 1099;
   background: white;
   width: 60px;
   height: 60px;
@@ -27,3 +27,12 @@
   height: 100%;
 }
 
+a,
+a:visited {
+    text-decoration: none;
+    color: inherit;
+}
+a:hover,
+a:focus {
+    text-decoration: none;
+}

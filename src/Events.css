@@ -8,6 +8,8 @@
     margin-top:0px;
     padding-left:0px;
     margin-left:30px;
+    padding-left:30px;
+    padding-right:20px;
 }
 .sportsEvents{
     background-color: rgb(255, 255, 255);
@@ -19,6 +21,18 @@
     padding-left:0px;
     margin-left:30px;
     margin-top:20px;
+    padding-left:30px;
+    padding-right:20px;
+}
+
+.events a,
+.events a:visited {
+    text-decoration: none;
+    color: inherit;
+}
+.events a:hover,
+.events a:focus {
+    text-decoration: none;
 }
 .events{
     display:flex;
@@ -45,7 +59,7 @@
     font-size:20px;
     cursor: pointer;
 }
-.popup-box{
+.calendar-box{
     width: 60vw;
     height:90vh;
     background-color: rgb(223, 124, 124);
@@ -54,8 +68,8 @@
     margin-left:30vw;
 }
 h2{
-    margin-top: 3px;
-    margin-bottom: 0px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     color:#671212;
     font-size: 30px;
 }

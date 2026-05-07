@@ -1,6 +1,95 @@
-#clubs{
-    overflow:hidden;
+.discover-page {
+  padding: 24px;
+  min-height: calc(100vh - 48px);
+  background: #FFEFEF;
 }
+
+.discover-header {
+  margin-bottom: 24px;
+}
+
+.discover-header h2 {
+  margin: 0 0 10px;
+  font-size: 32px;
+  color: #321212;
+}
+
+.discover-header p {
+  margin: 0;
+  color: #5f4f4f;
+}
+
+.discover-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.discover-clubs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.discover-filter {
+  position: fixed;
+  top: 24px;
+  align-self: start;
+  transform: translateX(62vw) translateY(16vh);
+  width:18vw;
+  flex-direction: column;
+}
+
+.filter-panel {
+  background: white;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.filter-panel h3 {
+  margin: 0 0 16px;
+  font-size: 18px;
+  color: #333;
+}
+
+.filter-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 999px;
+  padding: 10px 14px;
+  margin: 0 8px 8px 0;
+  font-size: 14px;
+  color: #4e3838;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.filter-chip:hover {
+  background: #fff3f1;
+}
+
+.filter-chip.active {
+  background: #e8420a;
+  border-color: #e8420a;
+  color: white;
+}
+
+.empty-state {
+  padding: 24px;
+  border-radius: 20px;
+  background: rgba(232, 66, 10, 0.08);
+  color: #6f3d34;
+  font-weight: 600;
+  text-align: center;
+}
+
 .sticky-header {
   position: sticky;
   top: 0;
@@ -8,4 +97,6 @@
   z-index: 100;
   background: #FFEFEF;
   margin-left: 1vw;
+  transform:translateX(-20px);
+  width: 75.5%;
 }
