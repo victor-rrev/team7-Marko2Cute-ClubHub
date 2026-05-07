@@ -1,9 +1,10 @@
 import './ClubList.css'
 import { useState } from 'react'
-import { RxCross2 } from 'react-icons/rx'
+import { RxCross2, RxStarFilled, RxStar } from 'react-icons/rx'
 
 function ClubList({ name, description, categories, time, location }) {
   const [isOpen, setIsOpen] = useState(false)
+  const [favorite, setFavorite] = useState(false)
 
   const categoryList = Array.isArray(categories)
     ? categories
@@ -22,6 +23,18 @@ function ClubList({ name, description, categories, time, location }) {
         }}
         style={{ cursor: 'pointer' }}
       >
+        <button
+          className={`star-button ${favorite ? 'starred' : ''}`}
+          onClick={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+            setFavorite((prev) => !prev)
+          }}
+          aria-label={favorite ? 'Unfavorite club' : 'Favorite club'}
+        >
+          {favorite ? <RxStarFilled size={24} /> : <RxStar size={24} />}
+        </button>
+
         <div className="top">
           <h1>{name}</h1>
           <h3>{time}, @{location}</h3>
@@ -49,7 +62,10 @@ function ClubList({ name, description, categories, time, location }) {
             setIsOpen(false)
           }}
         >
-          <div className="popup-box" onClick={(e) => e.stopPropagation()}>
+          <div className="popup-box" onClick={(e) => {
+            e.stopPropagation()
+            e.preventDefault()
+          }}>
             <RxCross2
               className="closebutton"
               size={30}

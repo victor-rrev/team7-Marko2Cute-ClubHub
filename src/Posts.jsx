@@ -159,7 +159,7 @@ import { useState } from 'react'
 import { RxCross2 } from "react-icons/rx";
 import './Posts.css'
 
-const MOCK_POSTS = [
+const INITIAL_MOCK_POSTS = [
   {
     id: '1',
     title: 'Guys where is the Black-Box Theater?',
@@ -286,6 +286,7 @@ const MOCK_POSTS = [
     ],
   },
 ]
+const USER_CLUBS = ['Thinking Club', 'Basketball Team', 'Art Society', 'Robotics Club', 'Spanish Club', 'Eco Action']
 
 const CARD_COLORS = {
   global: '#b2e0d8',
@@ -338,10 +339,43 @@ function PostCard({ post }) {
 }
 
 export default function Posts() {
-  const [isOpen, setIsOpen] = useState(false);
+  const [posts, setPosts] = useState(INITIAL_MOCK_POSTS)
+  const [isOpen, setIsOpen] = useState(false)
   const [sort, setSort] = useState('Both')
+  const [postTitle, setPostTitle] = useState('')
+  const [postBody, setPostBody] = useState('')
+  const [postScope, setPostScope] = useState('global')
+  const [selectedClub, setSelectedClub] = useState('')
 
-  const filtered = MOCK_POSTS.filter(p => {
+  const handleCreatePost = () => {
+    if (!postTitle.trim() || !postBody.trim()) {
+      alert('Please fill in both title and content')
+      return
+    }
+    
+    if (postScope === 'club' && !selectedClub) {
+      alert('Please select a club for private posts')
+      return
+    }
+
+    const newPost = {
+      id: Date.now().toString(),
+      title: postTitle,
+      authorName: 'You',
+      scope: postScope,
+      clubName: postScope === 'club' ? selectedClub : null,
+      comments: [],
+    }
+
+    setPosts(prev => [newPost, ...prev])
+    setPostTitle('')
+    setPostBody('')
+    setPostScope('global')
+    setSelectedClub('')
+    setIsOpen(false)
+  }
+
+  const filtered = posts.filter(p => {
     if (sort === 'Public only') return p.scope === 'global'
     if (sort === 'Private only') return p.scope === 'club'
     return true
@@ -378,14 +412,59 @@ export default function Posts() {
       <button className="posts-add-btn" title="New post"
                 onClick={() => setIsOpen(true)} 
                 style={{ cursor: 'pointer' }}>+</button>
+      
       {isOpen && (
-        <div onClick={() => setIsOpen(false)}>
-          <div className="calendar-box" onClick={(e) => e.stopPropagation()}>
-            <RxCross2 class="closebutton" size={30}
-              onClick={() => setIsOpen(false)} 
-              style={{ cursor: 'pointer' }}  />
-            <div className="popupContent">
-              <h2>Calendar</h2>
+        <div className="modal-overlay" onClick={() => setIsOpen(false)}>
+          <div className="create-post-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create a New Post</h2>
+              <RxCross2 size={30}
+                onClick={() => setIsOpen(false)} 
+                style={{ cursor: 'pointer' }}  />
+            </div>
+            <div className="modal-content">
+              <div className="form-group">
+                <label>Title</label>
+                <input
+                  type="text"
+                  value={postTitle}
+                  onChange={(e) => setPostTitle(e.target.value)}
+                  placeholder="Enter post title..."
+                />
+              </div>
+              <div className="form-group">
+                <label>Content</label>
+                <textarea
+                  value={postBody}
+                  onChange={(e) => setPostBody(e.target.value)}
+                  placeholder="Enter post content..."
+                  rows="5"
+                />
+              </div>
+              <div className="form-group">
+                <label>Visibility</label>
+                <select value={postScope} onChange={(e) => {
+                  setPostScope(e.target.value)
+                  setSelectedClub('')
+                }}>
+                  <option value="global">Public</option>
+                  <option value="club">Private (Club)</option>
+                </select>
+              </div>
+              
+              {postScope === 'club' && (
+                <div className="form-group">
+                  <label>Select Club</label>
+                  <select value={selectedClub} onChange={(e) => setSelectedClub(e.target.value)}>
+                    <option value="">-- Choose a club --</option>
+                    {USER_CLUBS.map(club => (
+                      <option key={club} value={club}>{club}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+              
+              <button className="submit-btn" onClick={handleCreatePost}>Post</button>
             </div>
           </div>
         </div>

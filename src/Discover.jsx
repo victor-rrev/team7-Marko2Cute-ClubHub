@@ -44,6 +44,9 @@ const SAMPLE_CLUBS = [
 function Discover() {
   const [selectedCategories, setSelectedCategories] = useState([])
   const [selectedDays, setSelectedDays] = useState([])
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
+  const [showUnfavoritedOnly, setShowUnfavoritedOnly] = useState(false)
+  const [favorites, setFavorites] = useState(new Set())
 
   const visibleClubs = useMemo(() => {
     let clubs = SAMPLE_CLUBS
@@ -59,8 +62,14 @@ function Discover() {
         )
       )
     }
+    if (showFavoritesOnly) {
+      clubs = clubs.filter((club) => favorites.has(club.name))
+    }
+    if (showUnfavoritedOnly) {
+      clubs = clubs.filter((club) => !favorites.has(club.name))
+    }
     return clubs
-  }, [selectedCategories, selectedDays])
+  }, [selectedCategories, selectedDays, showFavoritesOnly, showUnfavoritedOnly, favorites])
 
   return (
     <div className="discover-page">
@@ -68,16 +77,44 @@ function Discover() {
 
       <div className="discover-layout">
         <section className="discover-clubs">
-          {visibleClubs.map((club) => (
-            <ClubList key={club.name} {...club} />
-          ))}
-          {visibleClubs.length === 0 && (
+          {showFavoritesOnly && favorites.size === 0 ? (
+            <div className="empty-state">
+              <p>No favorites yet</p>
+              <p>Add clubs to your favorites by clicking the star icon</p>
+            </div>
+          ) : showUnfavoritedOnly && visibleClubs.length === 0 ? (
+            <div className="empty-state">All clubs in this category are favorited!</div>
+          ) : visibleClubs.length === 0 ? (
             <div className="empty-state">No clubs match that category.</div>
+          ) : (
+            visibleClubs.map((club) => (
+              <ClubList key={club.name} {...club} />
+            ))
           )}
         </section>
 
         <aside className="discover-filter">
           <div className="filter-panel">
+            <h3>Favorites</h3>
+            <button
+              className={showFavoritesOnly ? 'filter-chip active' : 'filter-chip'}
+              onClick={() => {
+                setShowFavoritesOnly(!showFavoritesOnly)
+                setShowUnfavoritedOnly(false)
+              }}
+            >
+              {showFavoritesOnly ? '★ Show All' : '☆ Show Favorites'}
+            </button>
+            <button
+              className={showUnfavoritedOnly ? 'filter-chip active' : 'filter-chip'}
+              onClick={() => {
+                setShowUnfavoritedOnly(!showUnfavoritedOnly)
+                setShowFavoritesOnly(false)
+              }}
+            >
+              {showUnfavoritedOnly ? '✓ Show All' : '○ Show Unfavorited'}
+            </button>
+
             <h3>Filter by category</h3>
             <button
               className={selectedCategories.length === 0 ? 'filter-chip active' : 'filter-chip'}
@@ -122,6 +159,8 @@ function Discover() {
               onClick={() => {
                 setSelectedCategories([])
                 setSelectedDays([])
+                setShowFavoritesOnly(false)
+                setShowUnfavoritedOnly(false)
               }}
             >
               Clear All Filters
