@@ -1,9 +1,7 @@
 import { useState } from 'react'
 import { useAuth } from './contexts/AuthContext'
+import { GRADE_LEVELS, PRONOUNS } from './lib/constants'
 import './Onboarding.css'
-
-const GRADE_LEVELS = ['freshman', 'sophomore', 'junior', 'senior']
-const PRONOUNS = ['he/him', 'she/her', 'they/them']
 
 export default function Onboarding() {
   const { completeOnboarding, user } = useAuth()
@@ -21,6 +19,7 @@ export default function Onboarding() {
     try {
       await completeOnboarding({ gradeLevel, pronouns })
     } catch (err) {
+      console.error('[onboarding] completeOnboarding failed:', err.code || err.name, '—', err.message)
       setError('Something went wrong. Please try again.')
       setLoading(false)
     }
