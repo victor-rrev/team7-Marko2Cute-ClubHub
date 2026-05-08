@@ -94,6 +94,7 @@ function Discover() {
         </section>
 
         <aside className="discover-filter">
+          <div className="scrollbarbox">
           <div className="filter-panel">
             <h3>Favorites</h3>
             <button
@@ -165,7 +166,7 @@ function Discover() {
             >
               Clear All Filters
             </button>
-          </div>
+          </div></div>
         </aside>
       </div>
     </div>

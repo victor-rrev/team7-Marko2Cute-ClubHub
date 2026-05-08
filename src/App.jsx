@@ -26,7 +26,7 @@ function AppContent() {
       </div>
     )
   }
-
+  /*
   if (!user) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: '20px' }}>
@@ -51,7 +51,7 @@ function AppContent() {
   if (!isOnboarded) {
     return <Onboarding />
   }
-
+  */
   return (
     <div className="app">
       <Sidebar />

@@ -92,6 +92,8 @@
     background-color: rgb(223, 124, 124);
     border: 1px solid rgb(214, 161, 161);
     border-radius: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .closebutton {
@@ -106,22 +108,100 @@
     padding-left: 40px;
     padding-right: 40px;
     justify-content: flex-start;
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    overflow: hidden;
+}
+
+.popup-body {
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 20px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .popupContent h1 {
     display: flex;
     font-size: 100px;
-    margin-top: 20px;
-    margin-bottom: 20px;
+    margin-top: 0;
+    margin-bottom: 0;
     color: rgb(67, 12, 12);
+    min-width: 0;
+    line-height: 1.05;
+}
+
+.popup-top {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.popup-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: nowrap;
+}
+
+.popup-header-row h1 {
+    flex: 1 1 0;
+    min-width: 0;
+    margin-right: 16px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.popup-meta-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 16px;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.popup-date,
+.popup-location {
+    color: rgb(67, 12, 12);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.popup-star-row {
+    display: flex;
+    justify-content: flex-end;
+    transform: translateY(-27.5px);
+    margin-bottom: -27.5px;
+}
+
+.popup-star-button {
+    border: none;
+    background: transparent;
+    color: #555555;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 50%;
+    transition: color 0.2s ease, background 0.2s ease;
+}
+
+.popup-star-button:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.popup-star-button.starred {
+    color: #ffbf00;
 }
 
 hr {
-    margin-top: 60px;
+    margin-top: 16px;
     margin-bottom: 25px;
     height: 1.67px;
     background-color: rgb(67, 12, 12);
-    border: none;
+    border: 0px solid rgb(67, 12, 12);
+    width:100%
 }
 
 .popupContent h4 {
@@ -160,4 +240,8 @@ hr {
 
 .star-button.starred {
   color: #ffbf00;
+}
+
+.popup-meta-row{
+    transform: translateX(-50px) translateY(42.5px);
 }
