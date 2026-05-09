@@ -22,19 +22,26 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [userDoc, setUserDoc] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [authLoading, setAuthLoading] = useState(true);
+  // True between user being set and the userDoc snapshot first arriving.
+  // Pre-flipped in the auth listener so the gate doesn't flash Onboarding
+  // in the gap before the snapshot lands.
+  const [userDocPending, setUserDocPending] = useState(false);
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (u) => {
       if (u) {
+        setUserDocPending(true);
         try {
           await ensureUserDoc(u);
         } catch (err) {
           console.error('[auth] ensureUserDoc failed:', err.code || err.name, '—', err.message);
         }
+      } else {
+        setUserDocPending(false);
       }
       setUser(u);
-      setLoading(false);
+      setAuthLoading(false);
     });
   }, []);
 
@@ -45,8 +52,11 @@ export function AuthProvider({ children }) {
     }
     return onSnapshot(doc(db, 'users', user.uid), (snap) => {
       setUserDoc(snap.exists() ? snap.data() : null);
+      setUserDocPending(false);
     });
   }, [user]);
+
+  const loading = authLoading || userDocPending;
 
   async function signIn() {
     try {

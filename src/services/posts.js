@@ -81,7 +81,12 @@ export async function listGlobalPosts(opts = {}) {
 export async function createPost(input) {
   if (!auth.currentUser) throw new Error('Must be signed in to post');
   if (!input.clubId) throw new Error('clubId is required');
-  if (!input.body || !input.body.trim()) throw new Error('body is required');
+  const hasBody = typeof input.body === 'string' && input.body.length > 0;
+  const hasMedia =
+    Array.isArray(input.mediaPaths) && input.mediaPaths.length > 0;
+  if (!hasBody && !hasMedia) {
+    throw new Error('body or media is required');
+  }
   const scope = input.scope || 'club';
   if (!POST_SCOPES.includes(scope)) {
     throw new Error(`Invalid scope: ${scope}`);
@@ -122,8 +127,8 @@ export async function updatePost(postId, patch) {
   if ('scope' in patch && !POST_SCOPES.includes(patch.scope)) {
     throw new Error(`Invalid scope: ${patch.scope}`);
   }
-  if ('body' in patch && (!patch.body || !patch.body.trim())) {
-    throw new Error('body cannot be empty');
+  if ('body' in patch && typeof patch.body !== 'string') {
+    throw new Error('body must be a string');
   }
   await updateDoc(doc(db, 'posts', postId), {
     ...patch,

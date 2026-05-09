@@ -7,7 +7,10 @@
  */
 
 const {setGlobalOptions} = require("firebase-functions");
-const {onDocumentWritten} = require("firebase-functions/v2/firestore");
+const {
+  onDocumentCreated,
+  onDocumentWritten,
+} = require("firebase-functions/v2/firestore");
 const {initializeApp} = require("firebase-admin/app");
 const {getFirestore, FieldValue} = require("firebase-admin/firestore");
 const logger = require("firebase-functions/logger");
@@ -161,6 +164,79 @@ exports.onCommentReactionWrite = onDocumentWritten(
       const {postId, commentId} = event.params;
       await db.doc(`posts/${postId}/comments/${commentId}`).update({
         reactionCount: FieldValue.increment(delta),
+      });
+    },
+);
+
+/**
+ * Auto-promotes pending memberships to active when a club's joinPolicy
+ * flips from 'approval' to 'open'. The implicit promise of "open" is
+ * that anyone in the queue gets in — so flipping the switch should
+ * settle the queue, not leave it stuck behind a now-irrelevant gate.
+ *
+ * The membership status update cascades through onMembershipWrite,
+ * which bumps memberCount and clubsJoined as a side effect.
+ */
+exports.onClubWrite = onDocumentWritten(
+    "clubs/{clubId}",
+    async (event) => {
+      const before = dataOrNull(event.data && event.data.before);
+      const after = dataOrNull(event.data && event.data.after);
+      if (!before || !after) return;
+      if (before.joinPolicy !== "approval" ||
+          after.joinPolicy !== "open") {
+        return;
+      }
+      const {clubId} = event.params;
+      const pending = await db.collection("memberships")
+          .where("clubId", "==", clubId)
+          .where("status", "==", "pending")
+          .get();
+      if (pending.empty) return;
+      const batch = db.batch();
+      pending.forEach((snap) => {
+        batch.update(snap.ref, {
+          status: "active",
+          joinedAt: FieldValue.serverTimestamp(),
+        });
+      });
+      await batch.commit();
+      logger.info("Auto-activated pending memberships on policy change", {
+        clubId,
+        count: pending.size,
+      });
+    },
+);
+
+/**
+ * Caps clubs/{clubId}/messages at MAX_MESSAGES per club. On every new
+ * message, counts the subcollection and batch-deletes the oldest
+ * (count - MAX_MESSAGES) docs. Cheap when under cap; meaningful work
+ * only when crossing the threshold on an active club.
+ */
+const MAX_MESSAGES = 1000;
+exports.onMessageCreate = onDocumentCreated(
+    "clubs/{clubId}/messages/{messageId}",
+    async (event) => {
+      const {clubId} = event.params;
+      const messagesRef = db.collection("clubs").doc(clubId)
+          .collection("messages");
+      const countSnap = await messagesRef.count().get();
+      const count = countSnap.data().count;
+      if (count <= MAX_MESSAGES) return;
+      const excess = count - MAX_MESSAGES;
+      const oldest = await messagesRef
+          .orderBy("createdAt", "asc")
+          .limit(excess)
+          .get();
+      if (oldest.empty) return;
+      const batch = db.batch();
+      oldest.forEach((doc) => batch.delete(doc.ref));
+      await batch.commit();
+      logger.info("Pruned oldest messages over cap", {
+        clubId,
+        before: count,
+        deleted: excess,
       });
     },
 );

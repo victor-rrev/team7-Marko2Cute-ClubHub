@@ -1,88 +1,48 @@
-import './App.css'
-import { useState } from 'react'
-import { CiSearch } from 'react-icons/ci'
-import Sidebar from './Sidebar.jsx'
-import Discover from './Discover.jsx'
-import Posts from './Posts.jsx'
-import Events from './Events.jsx'
-import SportsEvents from './SportsEvents.jsx'
-import ClubEvents from './ClubEvents.jsx'
-import Account from './Account.jsx'
-import AccountProfile from './AccountProfile.jsx'
-import Onboarding from './Onboarding.jsx'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { useAuth } from './contexts/AuthContext'
-import { Link } from 'react-router-dom'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom'
+import SignInScreen from './components/SignInScreen'
+import Onboarding from './components/Onboarding'
+import Sidebar from './components/Sidebar'
+import Discover from './pages/Discover'
+import CreateClub from './pages/CreateClub'
+import ClubDetail from './pages/ClubDetail'
+import EditClub from './pages/EditClub'
+import Posts from './pages/Posts'
+import PostDetail from './pages/PostDetail'
+import MyClubs from './pages/MyClubs'
+import Events from './pages/Events'
+import EditEvent from './pages/EditEvent'
+import Account from './pages/Account'
 
-function AppContent() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const location = useLocation()
-  const { user, loading, isOnboarded, signIn } = useAuth()
+function AppShell() {
+  const { user, loading, isOnboarded } = useAuth()
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
-        <p style={{ color: '#888', fontSize: '18px' }}>Loading...</p>
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500 dark:text-gray-400">Loading...</p>
       </div>
     )
   }
 
-  if (!user) {
-    return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: '20px' }}>
-        <h1 style={{ color: '#E8420A', fontSize: '36px', margin: 0, fontWeight: 'bold' }}>ClubHub</h1>
-        <p style={{ color: '#777', margin: 0 }}>Discover clubs and events at your school</p>
-        <button
-          onClick={signIn}
-          style={{
-            display: 'flex', alignItems: 'center', gap: '10px',
-            padding: '12px 24px', borderRadius: '16px', border: '2px solid #ddd',
-            background: 'white', fontSize: '16px', fontWeight: '600',
-            cursor: 'pointer', marginTop: '10px'
-          }}
-        >
-          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" />
-          Sign in with Google
-        </button>
-      </div>
-    )
-  }
-
-  if (!isOnboarded) {
-    return <Onboarding />
-  }
+  if (!user) return <SignInScreen />
+  if (!isOnboarded) return <Onboarding />
 
   return (
-    <div className="app">
+    <div className="min-h-screen">
       <Sidebar />
-      {location.pathname !== '/account' && (
-        <Link to="/account">
-          <AccountProfile />
-        </Link>
-      )}
-      <main className="main-content">
-        {location.pathname === '/discover' && (
-          <header className="header">
-            <div className="search-container">
-              <CiSearch className="search-icon" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && console.log('Searching:', searchTerm)}
-                placeholder="Search clubs..."
-                className="search-bar"
-              />
-            </div>
-          </header>
-        )}
+      <main className="ml-56">
         <Routes>
-          <Route path="/" element={<Discover />} />
-          <Route path="/discover" element={<Discover />} />
+          <Route path="/" element={<Posts />} />
           <Route path="/posts" element={<Posts />} />
+          <Route path="/posts/:postId" element={<PostDetail />} />
+          <Route path="/my-clubs" element={<MyClubs />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/clubs/new" element={<CreateClub />} />
+          <Route path="/clubs/:clubId" element={<ClubDetail />} />
+          <Route path="/clubs/:clubId/edit" element={<EditClub />} />
           <Route path="/events" element={<Events />} />
-          <Route path="/SportsEvents" element={<SportsEvents />} />
-          <Route path="/ClubEvents" element={<ClubEvents />} />
+          <Route path="/events/:eventId/edit" element={<EditEvent />} />
           <Route path="/account" element={<Account />} />
         </Routes>
       </main>
@@ -90,12 +50,10 @@ function AppContent() {
   )
 }
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <BrowserRouter>
+      <AppShell />
+    </BrowserRouter>
   )
 }
-
-export default App

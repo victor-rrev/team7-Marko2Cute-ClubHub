@@ -176,6 +176,21 @@ service cloud.firestore {
         && request.resource.data.externalLinks.size() <= 10;
 
       allow delete: if isClubOwner(clubId);
+
+      // Casual chat — capped at ~1000 messages, oldest pruned by Cloud Function.
+      match /messages/{messageId} {
+        allow read: if isActiveMember(clubId);
+        allow create: if isActiveMember(clubId)
+          && request.resource.data.keys().hasAll(['authorId', 'body', 'createdAt'])
+          && request.resource.data.keys().hasOnly(['authorId', 'body', 'createdAt'])
+          && request.resource.data.authorId == request.auth.uid
+          && request.resource.data.body is string
+          && request.resource.data.body.size() > 0
+          && request.resource.data.body.size() <= 500
+          && request.resource.data.createdAt == request.time;
+        // Updates and deletes only via Cloud Function trigger.
+        allow update, delete: if false;
+      }
     }
 
     // --- memberships --------------------------------------------------
@@ -341,10 +356,10 @@ service cloud.firestore {
         // Members can create club-scope posts; only admin/owner can promote
         && (request.resource.data.scope == 'club' || isClubAdmin(request.resource.data.clubId))
         && request.resource.data.body is string
-        && request.resource.data.body.size() > 0
         && request.resource.data.body.size() <= 10000
         && request.resource.data.mediaPaths is list
         && request.resource.data.mediaPaths.size() <= 10
+        && (request.resource.data.body.size() > 0 || request.resource.data.mediaPaths.size() > 0)
         && request.resource.data.commentCount == 0
         && request.resource.data.reactionCount == 0
         && request.resource.data.createdAt == request.time;
@@ -366,7 +381,10 @@ service cloud.firestore {
         && (request.resource.data.scope == resource.data.scope || isClubAdmin(resource.data.clubId))
         && validPostScope(request.resource.data.scope)
         && request.resource.data.body is string
-        && request.resource.data.body.size() > 0;
+        && request.resource.data.body.size() <= 10000
+        && request.resource.data.mediaPaths is list
+        && request.resource.data.mediaPaths.size() <= 10
+        && (request.resource.data.body.size() > 0 || request.resource.data.mediaPaths.size() > 0);
 
       allow delete: if isUser(resource.data.authorId) || isClubAdmin(resource.data.clubId);
 
