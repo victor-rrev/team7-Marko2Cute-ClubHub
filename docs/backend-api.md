@@ -252,13 +252,15 @@ All uploads must be `image/*` and under 5 MB (rules enforce). After uploading e.
 
 ## Environment / running locally
 
-The Firebase web config lives in `.env`. Production hits the real `clubhub-team-7` project.
+The Firebase web config lives in `.env`. By default, `npm run dev` hits the real `clubhub-team-7` project — Google sign-in works end-to-end against real Firebase Auth.
 
-To run dev against local emulators (no prod traffic):
+To run dev against local emulators instead (no prod traffic — useful for backend-only work):
 
-1. Add `VITE_USE_EMULATORS=true` to `.env.local` (gitignored).
+1. Uncomment `VITE_USE_EMULATORS=true` in `.env.local` (gitignored).
 2. `firebase emulators:start` (terminal A).
 3. `npm run dev` (terminal B).
+
+Caveat: the auth emulator does **not** do real Google OAuth — it shows a mock form where you type any user info, not a Google popup. To test the actual sign-in flow, leave the flag off.
 
 ## Deploying
 

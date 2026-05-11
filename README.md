@@ -36,15 +36,12 @@ npm install --prefix functions
 # VITE_FIREBASE_MESSAGING_SENDER_ID=...
 # VITE_FIREBASE_APP_ID=...
 
-# Start the Firebase emulators (terminal 1)
-firebase emulators:start
-
-# Start the Vite dev server (terminal 2)
+# Start the Vite dev server
 npm run dev
 # open http://localhost:5173
 ```
 
-To point `npm run dev` at the local emulators (instead of the real `clubhub-team-7` project), add `VITE_USE_EMULATORS=true` to `.env.local`.
+By default, `npm run dev` hits the real `clubhub-team-7` Firebase project — Google sign-in works end-to-end. To route dev against the local emulator suite instead (e.g. for backend work without touching prod data), uncomment `VITE_USE_EMULATORS=true` in `.env.local` and run `firebase emulators:start` alongside the dev server. The auth emulator doesn't do real Google OAuth, so leave the flag off when testing the sign-in flow.
 
 ## Testing
 

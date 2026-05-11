@@ -1,48 +1,48 @@
-import './App.css'
-import { useState } from 'react'
-import { CiSearch } from 'react-icons/ci'
-import Sidebar from './Sidebar.jsx'
-import Discover from './Discover.jsx'
-import Posts from './Posts.jsx'
-import Events from './Events.jsx'
-import Account from './Account.jsx'
-import AccountProfile from './AccountProfile.jsx'
-import ClubList from './ClubList.jsx'
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { useAuth } from './contexts/AuthContext'
+import SignInScreen from './components/SignInScreen'
+import Onboarding from './components/Onboarding'
+import Sidebar from './components/Sidebar'
+import Discover from './pages/Discover'
+import CreateClub from './pages/CreateClub'
+import ClubDetail from './pages/ClubDetail'
+import EditClub from './pages/EditClub'
+import Posts from './pages/Posts'
+import PostDetail from './pages/PostDetail'
+import MyClubs from './pages/MyClubs'
+import Events from './pages/Events'
+import EditEvent from './pages/EditEvent'
+import Account from './pages/Account'
 
-function AppContent() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const location = useLocation();
+function AppShell() {
+  const { user, loading, isOnboarded } = useAuth()
 
-  const handleSearch = () => {
-    console.log('Searching for:', searchTerm)
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500 dark:text-gray-400">Loading...</p>
+      </div>
+    )
   }
 
+  if (!user) return <SignInScreen />
+  if (!isOnboarded) return <Onboarding />
+
   return (
-    <div className="app">
+    <div className="min-h-screen">
       <Sidebar />
-      {location.pathname !== '/account' && <AccountProfile />}
-      <main className="main-content">
-        {location.pathname === '/discover' && (
-          <header className="header">
-            <div className="search-container">
-              <CiSearch className="search-icon" />
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
-                placeholder="Search clubs..."
-                className="search-bar"
-              />
-            </div>
-          </header>
-        )}
+      <main className="ml-56">
         <Routes>
-          <Route path="/" element={<Discover />} />
-          <Route path="/discover" element={<Discover />} />
+          <Route path="/" element={<Posts />} />
           <Route path="/posts" element={<Posts />} />
+          <Route path="/posts/:postId" element={<PostDetail />} />
+          <Route path="/my-clubs" element={<MyClubs />} />
+          <Route path="/discover" element={<Discover />} />
+          <Route path="/clubs/new" element={<CreateClub />} />
+          <Route path="/clubs/:clubId" element={<ClubDetail />} />
+          <Route path="/clubs/:clubId/edit" element={<EditClub />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/events/:eventId/edit" element={<EditEvent />} />
           <Route path="/account" element={<Account />} />
         </Routes>
       </main>
@@ -50,12 +50,10 @@ function AppContent() {
   )
 }
 
-function App() {
+export default function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <BrowserRouter>
+      <AppShell />
+    </BrowserRouter>
   )
 }
-
-export default App
