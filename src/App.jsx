@@ -18,8 +18,7 @@ function AppContent() {
   const [searchTerm, setSearchTerm] = useState('')
   const location = useLocation()
   const { user, loading, isOnboarded, signIn } = useAuth()
-  /*
-  // 1. Still resolving auth state
+
   if (loading) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
@@ -27,8 +26,7 @@ function AppContent() {
       </div>
     )
   }
-
-  // 2. Not signed in — show sign in screen
+  /*
   if (!user) {
     return (
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', flexDirection: 'column', gap: '20px' }}>
@@ -50,19 +48,18 @@ function AppContent() {
     )
   }
 
-  // 3. Signed in but not onboarded yet
   if (!isOnboarded) {
     return <Onboarding />
   }
-
-  // 4. Fully signed in and onboarded — show the app
   */
   return (
     <div className="app">
       <Sidebar />
-      <Link to="/account">
-        {location.pathname !== '/account' && <AccountProfile />}
-      </Link>
+      {location.pathname !== '/account' && (
+        <Link to="/account">
+          <AccountProfile />
+        </Link>
+      )}
       <main className="main-content">
         {location.pathname === '/discover' && (
           <header className="header">

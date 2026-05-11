@@ -1,31 +1,35 @@
 import {
   doc,
   getDoc,
+  runTransaction,
   serverTimestamp,
-  setDoc,
   updateDoc,
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { GRADE_LEVELS, PRONOUNS } from '../lib/constants';
 
 /**
- * Creates a `users/{uid}` document if one doesn't already exist for the
- * signed-in Firebase user. Idempotent — safe to call repeatedly. Called
- * automatically by `AuthContext.signIn` after a successful Google sign-in.
+ * Creates a `users/{uid}` document if one doesn't already exist. Wrapped
+ * in a transaction so concurrent callers (signIn + auth listener firing
+ * back-to-back) can't both write and trip the rules' immutable-createdAt
+ * check. Called from AuthContext on every auth state change so restored
+ * sessions also get a doc.
  *
  * @param {import('firebase/auth').User} firebaseUser
  * @returns {Promise<void>}
  */
 export async function ensureUserDoc(firebaseUser) {
   const ref = doc(db, 'users', firebaseUser.uid);
-  const snap = await getDoc(ref);
-  if (snap.exists()) return;
-  await setDoc(ref, {
-    displayName: firebaseUser.displayName,
-    email: firebaseUser.email,
-    photoURL: firebaseUser.photoURL,
-    createdAt: serverTimestamp(),
-    clubsJoined: [],
+  await runTransaction(db, async (tx) => {
+    const snap = await tx.get(ref);
+    if (snap.exists()) return;
+    tx.set(ref, {
+      displayName: firebaseUser.displayName,
+      email: firebaseUser.email,
+      photoURL: firebaseUser.photoURL,
+      createdAt: serverTimestamp(),
+      clubsJoined: [],
+    });
   });
 }
 
