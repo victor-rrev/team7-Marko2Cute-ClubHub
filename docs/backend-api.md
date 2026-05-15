@@ -205,23 +205,41 @@ const matches = await searchClubs('robotics', { limit: 10 });
 
 - **`searchClubs(query, { limit? })`** — returns clubs matching `query` (case-insensitive substring on name, description, or category). Default limit 20. Empty query returns `[]`.
 
-**Current implementation:** client-side substring match over `listClubs()`. Fine for one school's worth of clubs (tens to low hundreds). The frontend search bar can wire up against this immediately.
+**Implementation:** Algolia-backed when env vars are present, falling back to a client-side substring scan over `listClubs()` when they're not. The same `searchClubs(query, opts)` signature works in both modes — callers don't care which path is active.
 
-#### Activating Algolia (post-Blaze)
+#### How Algolia is wired up
 
-When the project moves to Blaze and we want better search (typo tolerance, ranking, faster queries):
+- `src/lib/algolia.js` builds an `algoliasearch` client from `VITE_ALGOLIA_APP_ID` + `VITE_ALGOLIA_SEARCH_KEY`. If either is missing, the export is `null` and `searchClubs` uses the client-side fallback.
+- `src/services/search.js` routes to `client.searchSingleIndex({ indexName: 'clubs', searchParams: { query, hitsPerPage } })` when the client exists, mapping `hit.objectID` → `id` so the return shape matches `listClubs`.
+- The **"Search with Algolia"** Firebase Extension (`algolia/firestore-algolia-search`) keeps the `clubs` Algolia index in sync with Firestore — installs auto-index new writes and remove deleted docs.
 
-1. Sign up for Algolia (free tier covers small projects).
-2. Firebase Console → **Extensions** → install **"Search with Algolia"** (`algolia/firestore-algolia-search`).
-3. During install: collection path = `clubs`, fields to index = `name, description, categories`, transform function = (default).
-4. Copy the **Application ID** and **Search-only API Key** from your Algolia dashboard. Add to `.env`:
-   ```
-   VITE_ALGOLIA_APP_ID=...
-   VITE_ALGOLIA_SEARCH_KEY=...
-   ```
-5. `npm install algoliasearch`.
-6. Replace the body of `searchClubs` in `src/services/search.js` with an Algolia query (see Algolia's JS-client docs). Keep the `(query, opts)` → `Array` signature — no frontend changes needed.
-7. Backfill: the extension only indexes *new* writes by default. To pre-fill the index with existing clubs, run the extension's backfill script (one-time).
+#### Required env vars
+
+| Var | Where | Notes |
+|---|---|---|
+| `VITE_ALGOLIA_APP_ID` | local `.env` + GitHub repo secret | Public; identifies your Algolia application. |
+| `VITE_ALGOLIA_SEARCH_KEY` | local `.env` + GitHub repo secret | **Use the search-only key**, never the admin key — it ships in the client bundle. |
+
+CI build pulls both from repo secrets and inlines them at build time, same pattern as the Firebase web config.
+
+#### Extension's Algolia API key
+
+The Firebase Extension writes to Algolia from server-side — it needs an Algolia API key with sync permissions. **Do not use the Admin API key.** In the Algolia dashboard → API Keys → create a new key with exactly these ACLs:
+
+- `addObject` — index new docs
+- `deleteObject` — remove docs from the index
+- `listIndexes`, `deleteIndex`
+- `editSettings`, `settings`
+
+Restrict the key to the `clubs` index for least privilege. Paste this scoped key into the extension's "Algolia API Key" field during install. The client-side `VITE_ALGOLIA_SEARCH_KEY` is a separate, even-more-restricted key (search-only).
+
+#### Re-installing or extending
+
+If you ever need to re-run the extension or change indexed fields:
+
+1. Firebase Console → **Extensions** → "Search with Algolia" → Reconfigure.
+2. Collection path = `clubs`, fields to index = `name, description, categories, memberCount, joinPolicy, logoPath`, transform function = (default).
+3. Backfill via the extension's import script if you need previously-existing docs in the index.
 
 ### `storage`
 

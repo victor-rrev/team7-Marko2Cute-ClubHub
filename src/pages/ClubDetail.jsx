@@ -177,14 +177,14 @@ export default function ClubDetail() {
 
   if (loading || !club) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
         <p className="text-gray-500 dark:text-gray-400">Loading...</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
       {backTo && (
         <Link
           to={backTo.path}
@@ -196,8 +196,8 @@ export default function ClubDetail() {
       )}
 
       {/* Header card */}
-      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 mb-6">
-        <div className="flex items-start gap-4">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-6 mb-6">
+        <div className="flex items-start gap-3 sm:gap-4">
           <ClubLogo
             club={club}
             size="lg"
@@ -205,43 +205,47 @@ export default function ClubDetail() {
             onUpdated={(patch) => setClub((prev) => ({ ...prev, ...patch }))}
           />
           <div className="flex-1 min-w-0">
-            <div className="flex items-start gap-2">
-              <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {club.name}
-              </h1>
-              {club.joinPolicy === 'approval' && (
-                <FiLock
-                  className="size-4 text-gray-400 shrink-0 mt-1.5"
-                  title="Approval required"
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start gap-2">
+                  <h1 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100 break-words">
+                    {club.name}
+                  </h1>
+                  {club.joinPolicy === 'approval' && (
+                    <FiLock
+                      className="size-4 text-gray-400 shrink-0 mt-1.5"
+                      title="Approval required"
+                    />
+                  )}
+                </div>
+                <div className="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
+                  <span className="inline-flex items-center gap-1">
+                    <FiUsers className="size-3.5" />
+                    {club.memberCount ?? 0}{' '}
+                    {club.memberCount === 1 ? 'member' : 'members'}
+                  </span>
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {club.categories?.map((cat) => (
+                    <span
+                      key={cat}
+                      className={`px-2 py-0.5 rounded-full text-xs ${categoryChipClass(cat)}`}
+                    >
+                      {cat}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="shrink-0">
+                <JoinButton
+                  membership={membership}
+                  joinPolicy={club.joinPolicy}
+                  actionPending={actionPending}
+                  onJoin={handleJoin}
+                  onLeave={handleLeave}
                 />
-              )}
+              </div>
             </div>
-            <div className="mt-1 flex items-center gap-3 text-xs text-gray-500 dark:text-gray-400">
-              <span className="inline-flex items-center gap-1">
-                <FiUsers className="size-3.5" />
-                {club.memberCount ?? 0}{' '}
-                {club.memberCount === 1 ? 'member' : 'members'}
-              </span>
-            </div>
-            <div className="mt-2 flex flex-wrap gap-1.5">
-              {club.categories?.map((cat) => (
-                <span
-                  key={cat}
-                  className={`px-2 py-0.5 rounded-full text-xs ${categoryChipClass(cat)}`}
-                >
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
-          <div className="shrink-0">
-            <JoinButton
-              membership={membership}
-              joinPolicy={club.joinPolicy}
-              actionPending={actionPending}
-              onJoin={handleJoin}
-              onLeave={handleLeave}
-            />
           </div>
         </div>
         {club.description && (
@@ -261,12 +265,12 @@ export default function ClubDetail() {
       </div>
 
       {/* Tabs */}
-      <div className="border-b border-gray-200 dark:border-gray-800 mb-4 flex gap-1">
+      <div className="border-b border-gray-200 dark:border-gray-800 mb-4 flex gap-1 overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
         {tabs.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
-            className={`px-4 py-2 text-sm font-medium capitalize transition-colors -mb-px border-b-2 ${
+            className={`shrink-0 px-3 sm:px-4 py-2 text-sm font-medium capitalize transition-colors -mb-px border-b-2 ${
               tab === t
                 ? 'border-orange-500 text-orange-600 dark:text-orange-400'
                 : 'border-transparent text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100'

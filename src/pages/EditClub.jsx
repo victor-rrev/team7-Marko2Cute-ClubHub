@@ -136,14 +136,14 @@ export default function EditClub() {
 
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-6 py-8">
+      <div className="max-w-2xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
         <p className="text-gray-500 dark:text-gray-400">Loading...</p>
       </div>
     )
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-6 py-8">
+    <div className="max-w-2xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
       <Link
         to={`/clubs/${clubId}`}
         className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4"

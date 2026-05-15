@@ -12,6 +12,7 @@
     "test:ci": "vitest run"
   },
   "dependencies": {
+    "algoliasearch": "^5.52.1",
     "dayjs": "^1.11.20",
     "firebase": "^12.12.1",
     "react": "^19.2.5",

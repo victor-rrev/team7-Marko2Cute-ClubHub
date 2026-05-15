@@ -58,7 +58,7 @@ export default function Events() {
   }, [user.uid])
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-6">
         Upcoming events
       </h1>

@@ -167,7 +167,7 @@ export default function PostDetail() {
 
   if (loading || !post) {
     return (
-      <div className="max-w-3xl mx-auto px-6 py-8">
+      <div className="max-w-3xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
         <p className="text-gray-500 dark:text-gray-400">Loading...</p>
       </div>
     )
@@ -177,7 +177,7 @@ export default function PostDetail() {
   const isAuthor = user?.uid === post.authorId
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8">
+    <div className="max-w-3xl mx-auto px-4 py-5 sm:px-6 sm:py-8">
       <Link
         to="/posts"
         className="inline-flex items-center gap-1 text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 mb-4"
@@ -186,8 +186,8 @@ export default function PostDetail() {
         Back to posts
       </Link>
 
-      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6">
-        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mb-3">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 sm:p-6">
+        <div className="flex items-center flex-wrap gap-x-2 gap-y-1 text-xs text-gray-500 dark:text-gray-400 mb-3">
           {club && (
             <Link
               to={`/clubs/${post.clubId}`}

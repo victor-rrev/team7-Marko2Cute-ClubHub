@@ -31,7 +31,7 @@ function AppShell() {
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <main className="ml-56">
+      <main className="md:ml-56 pb-20 md:pb-0">
         <Routes>
           <Route path="/" element={<Posts />} />
           <Route path="/posts" element={<Posts />} />

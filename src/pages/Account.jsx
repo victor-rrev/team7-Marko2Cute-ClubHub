@@ -72,24 +72,30 @@ export default function Account() {
   const photoURL = userDoc?.photoURL || user?.photoURL
 
   return (
-    <div className="max-w-3xl mx-auto px-6 py-8 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 py-5 sm:px-6 sm:py-8 space-y-6">
       <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Account</h1>
 
-      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-5 flex items-center gap-4">
-        <div className="relative size-14 rounded-full overflow-hidden shrink-0 group">
-          {photoURL ? (
-            <img src={photoURL} alt="" className="size-full object-cover" />
-          ) : (
-            <div className="size-full bg-gray-300 dark:bg-gray-700" />
-          )}
+      <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 p-4 sm:p-5 flex items-center gap-4">
+        <div className="relative size-14 shrink-0 group">
           <button
             type="button"
             onClick={() => fileRef.current?.click()}
             disabled={uploading}
-            className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-medium transition-opacity disabled:opacity-50"
+            className="size-14 rounded-full overflow-hidden block disabled:opacity-50"
+            aria-label="Change avatar"
           >
-            {uploading ? '...' : 'Change'}
+            {photoURL ? (
+              <img src={photoURL} alt="" className="size-full object-cover" />
+            ) : (
+              <div className="size-full bg-gray-300 dark:bg-gray-700" />
+            )}
+            <span className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white text-xs font-medium transition-opacity">
+              {uploading ? '...' : 'Change'}
+            </span>
           </button>
+          <span className="absolute -bottom-0.5 -right-0.5 size-5 rounded-full bg-orange-500 border-2 border-white dark:border-gray-900 flex items-center justify-center text-white text-[10px] pointer-events-none md:hidden">
+            +
+          </span>
           <input
             type="file"
             accept="image/*"

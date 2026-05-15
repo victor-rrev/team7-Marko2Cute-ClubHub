@@ -1,41 +1,57 @@
-import { listClubs } from './clubs';
+import { algoliaClient, CLUBS_INDEX } from '../lib/algolia'
+import { listClubs } from './clubs'
 
 /**
  * Searches active clubs by name, description, or category. Returns up
  * to `opts.limit` matches (default 20).
  *
- * **MVP implementation:** client-side substring match over all clubs
- * fetched via `listClubs`. Fine for one school's worth of clubs (tens
- * to low hundreds). When the Algolia Firebase Extension is installed
- * (post-Blaze upgrade), swap this body for an Algolia query — frontend
- * callers don't need to change. Setup steps live in `docs/backend-api.md`
- * under "Search → Activating Algolia".
+ * Routes to Algolia when the env keys are configured (live in prod /
+ * any environment with VITE_ALGOLIA_APP_ID + VITE_ALGOLIA_SEARCH_KEY).
+ * Falls back to a client-side substring scan otherwise, so dev without
+ * Algolia secrets still works.
  *
  * @param {string} query
  * @param {{ limit?: number }} [opts]
  * @returns {Promise<Array<object>>}
  */
 export async function searchClubs(query, opts = {}) {
-  if (!query || !query.trim()) return [];
-  const needle = query.trim().toLowerCase();
-  const limit = opts.limit || 20;
+  const trimmed = query?.trim() ?? ''
+  if (!trimmed) return []
+  if (algoliaClient) return searchViaAlgolia(trimmed, opts)
+  return searchClientSide(trimmed, opts)
+}
 
-  const all = await listClubs();
+async function searchViaAlgolia(query, opts) {
+  const limit = opts.limit ?? 20
+  const result = await algoliaClient.searchSingleIndex({
+    indexName: CLUBS_INDEX,
+    searchParams: { query, hitsPerPage: limit },
+  })
+  // Algolia returns the doc's Firestore ID as `objectID`.
+  return result.hits
+    .filter((hit) => !hit.deletedAt)
+    .map((hit) => ({ id: hit.objectID, ...hit }))
+}
+
+async function searchClientSide(query, opts) {
+  const needle = query.toLowerCase()
+  const limit = opts.limit ?? 20
+  const all = await listClubs()
   return all
-      .filter((club) => {
-        if (club.name && club.name.toLowerCase().includes(needle)) return true;
-        if (
-          club.description
-          && club.description.toLowerCase().includes(needle)
-        ) {
-          return true;
-        }
-        if (Array.isArray(club.categories)) {
-          return club.categories.some(
-              (cat) => cat.toLowerCase().includes(needle),
-          );
-        }
-        return false;
-      })
-      .slice(0, limit);
+    .filter((club) => {
+      if (club.name && club.name.toLowerCase().includes(needle)) return true
+      if (
+        club.description &&
+        club.description.toLowerCase().includes(needle)
+      ) {
+        return true
+      }
+      if (Array.isArray(club.categories)) {
+        return club.categories.some((cat) =>
+          cat.toLowerCase().includes(needle),
+        )
+      }
+      return false
+    })
+    .slice(0, limit)
 }
